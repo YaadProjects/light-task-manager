@@ -1,24 +1,68 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams } from 'ionic-angular';
+import { IonicPage, NavController, AlertController } from 'ionic-angular';
+import { TeamProvider } from '../../providers/team/team';
+import { AuthProvider } from '../../providers/auth/auth';
 
-/**
- * Generated class for the TeamPage page.
- *
- * See http://ionicframework.com/docs/components/#navigation for more info
- * on Ionic pages and navigation.
- */
 @IonicPage()
 @Component({
   selector: 'page-team',
   templateUrl: 'team.html',
 })
 export class TeamPage {
-
-  constructor(public navCtrl: NavController, public navParams: NavParams) {
-  }
+  public teamProfile:any;
+  public userProfile:any;
+  constructor(public navCtrl:NavController, public alertCtrl:AlertController, 
+    public teamProvider:TeamProvider, public authProvider:AuthProvider) {}
 
   ionViewDidLoad() {
-    console.log('ionViewDidLoad TeamPage');
+    this.teamProvider.getUserProfile().subscribe( userProfile => {
+      this.userProfile = userProfile;
+      
+      this.teamProvider.getTeamProfile(userProfile.teamId)
+      .subscribe( teamProfileObservable => {
+        this.teamProfile = teamProfileObservable;
+      });
+    });
+  }
+
+  inviteTeamMember(): void {
+    let prompt = this.alertCtrl.create({
+      title: 'Invite a team member',
+      message: "Enter your coworker's email to send an invitation to use the app.",
+      inputs: [
+        {
+          name: 'name',
+          placeholder: "Your coworker's name",
+          type: 'text'
+        },
+        {
+          name: 'email',
+          placeholder: "Your coworker's email",
+          type: 'email'
+        },
+      ],
+      buttons: [
+        {
+          text: 'Cancel',
+          handler: data => {
+            console.log('Cancel clicked');
+          }
+        },
+        {
+          text: 'Save',
+          handler: data => {
+            this.authProvider.createMember(data.email, this.teamProfile.$key, data.name);
+          }
+        }
+      ]
+    });
+    prompt.present();
+  }
+
+  goToMemberProfilePage(memberId): void {
+    this.navCtrl.push('MemberProfilePage', {
+      'memberId': memberId
+    });
   }
 
 }

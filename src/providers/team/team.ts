@@ -11,15 +11,9 @@ import firebase from 'firebase/app';
 @Injectable()
 export class TeamProvider {
   public userId:string;
-  public teamId:string;
   constructor(public afAuth: AngularFireAuth, public afDb: AngularFireDatabase) {
     afAuth.authState.subscribe( user => { 
-      this.userId = user.uid;
-      
-      afDb.object(`/userProfile/${user.uid}/`).subscribe( userProfile => {
-        this.teamId = userProfile.teamId;
-      });
-
+      this.userId = user.uid; 
     });
   }
 
@@ -34,25 +28,31 @@ export class TeamProvider {
     return this.afDb.object(`/userProfile/${this.userId}/`);
   }
 
-  getTeamMemberList(): FirebaseListObservable<any> {
-    return this.afDb.list(`/teamProfile/${this.teamId}/teamMembers`);
+  getMemberProfile(userId:string): FirebaseObjectObservable<any> {
+    return this.afDb.object(`/userProfile/${userId}/`);
   }
 
-  getTeamProfile(): FirebaseObjectObservable<any> {
-    return this.afDb.object(`/teamProfile/${this.teamId}`);
+  getTeamMemberList(teamId:string): FirebaseListObservable<any> {
+    return this.afDb.list(`/teamProfile/${teamId}/teamMembers`);
   }
 
-  createTask(taskName:string, memberId:string, memberName:string): firebase.Promise<any> {
-    return this.afDb.list(`/taskListByTeam/${this.teamId}/`)
-      .push({ taskName, memberId, memberName, completed: false });
+  getTeamProfile(teamId:string): any {
+    return this.afDb.object(`/teamProfile/${teamId}`);
   }
 
-  getTaskList(): FirebaseListObservable<any> {
-    return this.afDb.list(`/taskListByTeam/${this.teamId}/`);
+  createTask(taskName:string, memberId:string, memberName:string, 
+    memberEmail:string): firebase.Promise<any> {
+
+    return this.afDb.list(`/taskListByTeam/${this.userId}/`)
+      .push({ taskName, memberId, memberName, memberEmail, completed: false });
   }
 
-  completeTask(taskId): firebase.Promise<any> {
-    return this.afDb.object(`/taskListByTeam/${this.teamId}/${taskId}/`)
+  getTaskList(teamId:string): FirebaseListObservable<any> {
+    return this.afDb.list(`/taskListByTeam/${teamId}/`);
+  }
+
+  completeTask(teamId:string, taskId:string): firebase.Promise<any> {
+    return this.afDb.object(`/taskListByTeam/${teamId}/${taskId}/`)
       .update({ completed: true });
   }
 

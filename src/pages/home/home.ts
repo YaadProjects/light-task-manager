@@ -1,24 +1,56 @@
 import { Component } from '@angular/core';
-import { IonicPage, NavController, NavParams } from 'ionic-angular';
+import { IonicPage, NavController, AlertController } from 'ionic-angular';
+import { TeamProvider } from '../../providers/team/team';
 
-/**
- * Generated class for the HomePage page.
- *
- * See http://ionicframework.com/docs/components/#navigation for more info
- * on Ionic pages and navigation.
- */
 @IonicPage()
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html',
 })
 export class HomePage {
+  public isAdmin: boolean = false;
+  public adminTaskList: Array<any> = [];
+  public memberTaskList: Array<any> = [];
+  public userProfile: any = {};
 
-  constructor(public navCtrl: NavController, public navParams: NavParams) {
-  }
+  constructor(public navCtrl:NavController, public alertCtrl:AlertController, 
+    public teamProvider:TeamProvider) {}
 
   ionViewDidLoad() {
-    console.log('ionViewDidLoad HomePage');
+    this.teamProvider.getAdminStatus().then( adminStatus => {
+      this.isAdmin = adminStatus;
+    });
+
+    this.teamProvider.getUserProfile().subscribe( profileSnapshot => {
+      this.userProfile = profileSnapshot;
+
+      this.teamProvider.getTaskList(profileSnapshot.teamId).subscribe( taskList => {
+        this.adminTaskList = taskList;
+        this.memberTaskList = taskList.filter(task => {
+          return task.memberId === profileSnapshot.$key;
+        });
+      });
+    });
+  }
+
+  goToTaskCreate(): void {
+    this.navCtrl.push('TaskCreatePage');
+  }
+
+  completeTask(taskId:string): void {
+    let confirm = this.alertCtrl.create({
+      title: 'Are you done?',
+      message: 'Hit OK to mark this task as completed.',
+      buttons: [
+        {
+          text: 'OK',
+          handler: () => { 
+            this.teamProvider.completeTask(this.userProfile.teamId, taskId);
+          }
+        }
+      ]
+    });
+    confirm.present();
   }
 
 }
