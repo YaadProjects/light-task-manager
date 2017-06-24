@@ -30,7 +30,11 @@ export class AuthProvider {
 
   createMember(email:string, teamId:string, fullName:string): firebase.Promise<any> {
     const newMemberRef = this.afDb.list(`teamProfile/${teamId}/teamMembers/`).push({});
-    return newMemberRef.set({ fullName, email, id: newMemberRef.key});
+    return newMemberRef.set({
+      fullName, 
+      email,
+      id: newMemberRef.key    
+    });
   }
 
   loginUser(email:string, password:string): firebase.Promise<any> {
