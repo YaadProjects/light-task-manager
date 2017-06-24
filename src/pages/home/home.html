@@ -27,7 +27,7 @@
     <ion-list-header>
       These are your assigned tasks {{ userProfile?.fullName }}
     </ion-list-header>
-    <ion-item *ngFor="let task of memberTaskList" (click)="completeTask(task)" 
+    <ion-item *ngFor="let task of memberTaskList" (click)="completeTask(task.$key)" 
       [class.incomplete]="!task.completed" [class.completed]="task.completed">
       <h2>{{ task.taskName }}</h2>
     </ion-item>

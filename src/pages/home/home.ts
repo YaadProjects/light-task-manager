@@ -43,6 +43,12 @@ export class HomePage {
       message: 'Hit OK to mark this task as completed.',
       buttons: [
         {
+          text: 'Cancel',
+          handler: () => { 
+            console.log("Cancel clicked");
+          }
+        },
+        {
           text: 'OK',
           handler: () => { 
             this.teamProvider.completeTask(this.userProfile.teamId, taskId);
